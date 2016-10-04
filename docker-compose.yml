@@ -1,0 +1,57 @@
+version: '2'
+
+services:
+    redis:
+        extends:
+            file: docker/common.yml
+            service: cache
+
+    postgre:
+        extends:
+            file: docker/common.yml
+            service: db
+
+    django-app:
+        extends:
+            file: docker/common.yml
+            service: app
+#        build:
+#            context: .
+#            dockerfile: ./Dockerfile
+        container_name: dj-app
+        command: runserver
+        ports:
+            - "8000:8000"
+            - "9191:9191"
+        links:
+            - postgre
+            - redis
+            - celery-worker
+        depends_on:
+            - postgre
+            - redis
+            - celery-worker
+
+    celery-worker:
+        extends:
+            file: docker/common.yml
+            service: app
+        image: sergeidc/docker-celery-entrypoint-f:latest
+        container_name: finds-api-celery
+        command: '-l info'
+        links:
+            - postgre
+            - redis
+        depends_on:
+            - postgre
+            - redis
+
+    nginx:
+        extends:
+            file: docker/common.yml
+            service: proxy
+        container_name: nginx-http
+        volumes:
+            - ./nginx/conf.templ.http:/etc/nginx/conf.templ:ro
+        links:
+            - django-app

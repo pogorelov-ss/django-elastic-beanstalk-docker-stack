@@ -1,0 +1,21 @@
+Django
+
+### PostgresSQL driver
+psycopg2
+
+Celery
+
+# DRF and tools
+djangorestframework
+
+# AWS tools
+boto3
+
+uwsgi
+
+redis
+django-redis
+
+# not for prod?
+django-extensions
+pip

@@ -1,0 +1,65 @@
+version: '2'
+
+services:
+    cache:
+        image: redis:latest
+        container_name: Redis
+        ports:
+            - "6379:6379"
+        # environment:
+        #     X: x
+
+    db:
+        image: postgres:latest
+        container_name: Postgre
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./data/postgresql:/var/lib/postgresql/data
+        environment:
+            POSTGRES_PASSWORD: xxpassxx
+            POSTGRES_USER: user_name
+            POSTGRES_DB: test_db
+
+    app:
+        image: sergeidc/django_in_containers:latest
+        container_name: uwsgi
+        volumes:
+            - ../dj_app/:/dj_app
+        environment:
+            DJANGO_SETTINGS_MODULE: dj_main.settings
+            RDS_DB_NAME: test_db
+            RDS_USERNAME: user_name
+            RDS_PASSWORD: xxpassxx
+            RDS_HOSTNAME: postgre
+            RDS_PORT: 5432
+            ALLOWED_HOST: localhost
+            DJ_DEBUG: 1
+            CACHE_HOST: redis
+
+    proxy:
+        image: sergeidc/docker-nginx-entrypoint:latest
+        container_name: nginx-FindsApi-uwsgi
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ../nginx/conf.templ:/etc/nginx/conf.templ:ro
+            - ../dj_app/collect:/var/www/collect:ro
+            - ../nginx/includes:/etc/nginx/includes:ro
+            - ../nginx/entrypoint.sh:/entrypoint.sh
+        environment:
+            ALLOWED_HOST: localhost
+            NGINX_MAIN_PORT: 80
+            NGINX_REDIRECT_PORT: 88
+
+    logs:
+        image: sergeidc/docker-logentries-entrypoint:latest
+        container_name: logentries
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./logentries/entrypoint.sh:/entrypoint.sh
+        environment:
+            LOGSTOKEN: 4c-
+            EVENTSTOKEN: 86-
+        command: []
