@@ -10,7 +10,7 @@ services:
         #     X: x
 
     db:
-        image: postgres:latest
+        image: postgres:9.5
         container_name: Postgre
         ports:
             - "5432:5432"
@@ -22,7 +22,7 @@ services:
             POSTGRES_DB: test_db
 
     app:
-        image: sergeidc/django_in_containers:latest
+        image:  sergeidc/django-elastic-beanstalk-docker-stack:python
         container_name: uwsgi
         volumes:
             - ../dj_app/:/dj_app

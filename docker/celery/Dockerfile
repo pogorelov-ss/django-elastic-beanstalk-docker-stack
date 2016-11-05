@@ -1,4 +1,4 @@
-FROM decorist/finds_api:latest
+FROM sergeidc/django-elastic-beanstalk-docker-stack:python
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [-l, info]

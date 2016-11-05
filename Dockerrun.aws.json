@@ -1,0 +1,138 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+    {
+      "name": "dj-app",
+      "host": {
+        "sourcePath": "/var/app/current/dj_app"
+      }
+    },
+    {
+      "name": "dj-app-static",
+      "host": {
+        "sourcePath": "/var/app/current/dj_app/collect"
+      }
+    },
+    {
+      "name": "nginx-proxy-conf",
+      "host": {
+        "sourcePath": "/var/app/current/nginx/conf.templ"
+      }
+    },
+    {
+      "name": "nginx-includes",
+      "host": {
+        "sourcePath": "/var/app/current/nginx/includes"
+      }
+    },
+    {
+      "name": "nginx-entrypoint",
+      "host": {
+        "sourcePath": "/var/app/current/nginx/entrypoint.sh"
+      }
+    },
+    {
+      "name": "logentries-entrypoint",
+      "host": {
+        "sourcePath": "/var/app/current/docker/logentries/entrypoint.sh"
+      }
+    },
+    {
+      "name": "docker-sock",
+      "host": {
+        "sourcePath": "/var/run/docker.sock"
+      }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "django-app",
+      "image": "sergeidc/django-elastic-beanstalk-docker-stack:python",
+      "essential": true,
+      "memory": 1024,
+      "mountPoints": [
+        {
+          "sourceVolume": "dj-app",
+          "containerPath": "/dj_app",
+          "readOnly": false
+        }
+      ]
+    },
+    {
+      "name": "celery-worker",
+      "image": "sergeidc/django-elastic-beanstalk-docker-stack:celery",
+      "essential": true,
+      "memory": 512,
+      "mountPoints": [
+        {
+          "sourceVolume": "dj-app",
+          "containerPath": "/dj_app",
+          "readOnly": false
+        }
+      ]
+    },
+    {
+      "name": "nginx-proxy",
+      "image": "sergeidc/docker-nginx-entrypoint:latest",
+      "essential": true,
+      "memory": 256,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80
+        },
+        {
+          "hostPort": 443,
+          "containerPort": 443
+        }
+      ],
+      "links": [
+        "django-app"
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "awseb-logs-nginx-proxy",
+          "containerPath": "/var/log/nginx"
+        },
+        {
+          "sourceVolume": "nginx-proxy-conf",
+          "containerPath": "/etc/nginx/conf.templ",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "nginx-includes",
+          "containerPath": "/etc/nginx/includes",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "dj-app-static",
+          "containerPath": "/var/www/collect",
+          "readOnly": false
+        },
+        {
+          "sourceVolume": "nginx-entrypoint",
+          "containerPath": "/entrypoint.sh",
+          "readOnly": false
+        }
+      ]
+    },
+    {
+      "name": "logentries",
+      "image": "sergeidc/docker-logentries-entrypoint:latest",
+      "essential": false,
+      "memory": 128,
+      "mountPoints": [
+        {
+          "sourceVolume": "logentries-entrypoint",
+          "containerPath": "/entrypoint.sh",
+          "readOnly": false
+        },
+        {
+          "sourceVolume": "docker-sock",
+          "containerPath": "/var/run/docker.sock",
+          "readOnly": false
+        }
+      ]
+    }
+  ]
+}

@@ -36,7 +36,7 @@ services:
         extends:
             file: docker/common.yml
             service: app
-        image: sergeidc/docker-celery-entrypoint-f:latest
+        image:  sergeidc/django-elastic-beanstalk-docker-stack:celery
         container_name: finds-api-celery
         command: '-l info'
         links:
