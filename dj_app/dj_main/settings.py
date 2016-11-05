@@ -132,7 +132,7 @@ EXTERNAL_APPS = [
     'django.contrib.staticfiles',
 
     # Other external apps
-    'raven.contrib.django.raven_compat',
+    # 'raven.contrib.django.raven_compat',
     'celery',
     'rest_framework',
 ]
