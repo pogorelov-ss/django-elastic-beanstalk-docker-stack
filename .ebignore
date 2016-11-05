@@ -114,7 +114,7 @@ docker/data/*
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-
+.ebextensions.templates
 node_modules/
 
 dj_app/set_local_envs.sh
